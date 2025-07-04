@@ -1,4 +1,3 @@
-```
 ## SOLID Principles
 
 This project demonstrates the application of the **SOLID principles** using a simple order management system.
@@ -40,4 +39,3 @@ This principle is a core focus of the design. Instead of a single, large `IItem`
 ### Dependency Inversion Principle (DIP)
 
 The `TOrder` class (a high-level module) does not depend on concrete implementation classes like `TMetalSparrow` or `TPenguinEbook` (low-level modules). Instead, it depends on **abstractions** (`IOrderItem`). This reduces coupling and simplifies maintenance and testing.
-```
