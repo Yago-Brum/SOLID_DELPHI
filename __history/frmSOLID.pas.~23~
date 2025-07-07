@@ -1,0 +1,69 @@
+unit frmSOLID;
+
+interface
+
+uses
+  Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  uItemInterfaces, uOrderItems, uOrder, System.Threading, uOrderService;
+
+type
+  TForm1 = class(TForm)
+    btnTest: TButton;
+    Memo1: TMemo;
+    procedure btnTestClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    FOrderService: TOrderService;
+    //procedure HandleOrderLogMessage(const S: string);
+    procedure LogMessage(const AMessage: string);
+    //procedure HandleOrderLogMessage(const S: string);
+  public
+    procedure FormDestroy(Sender: TObject);
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.btnTestClick(Sender: TObject);
+begin
+  Memo1.Clear;
+  FOrderService.ProcessNewOrder;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  //FOrderService := TOrderService.Create(HandleOrderLogMessage);
+  FOrderService := TOrderService.Create(Sender);
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FOrderService);
+end;
+
+//procedure TForm1.HandleOrderLogMessage(const S: string);
+//begin
+//  TThread.Synchronize(nil,
+//    procedure
+//    begin
+//      Memo1.Lines.Add(S);
+//    end);
+//end;
+
+procedure TForm1.LogMessage(const AMessage: string);
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      Memo1.Lines.Add(AMessage);
+    end);
+end;
+
+end.
+

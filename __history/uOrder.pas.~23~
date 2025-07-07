@@ -1,0 +1,152 @@
+unit uOrder;
+
+interface
+
+uses
+  System.Classes,
+  System.Generics.Collections,
+  uItemInterfaces,
+  uOrderItems,
+  System.SysUtils,
+  uLogInterfaces;
+
+
+type
+  //TStringProc = reference to procedure(const S: string);
+
+  TOrderItemEntry = class
+  private
+    FItem: IOrderItem;
+    FQuantity: Integer;
+  public
+    constructor Create(AItem: IOrderItem; AQuantity: Integer);
+    property Item: IOrderItem read FItem;
+    property Quantity: Integer read FQuantity;
+  end;
+
+  TOrder = class
+  private
+    FOrderDate: TDateTime;
+    FItems: TList<TOrderItemEntry>;
+    //FOnLogMessage: TStringProc;
+    FLogListeners: TList<ILogListener>;
+    procedure LogItemDetails(AItem: IOrderItem);
+    procedure Log(const AMessage: string);
+    procedure ProcessLogOrderItem;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure AddItem(AItem: IOrderItem; AQuantity: Integer);
+    function CalculateTotalOrderValue: Currency;
+    procedure ProcessOrder;
+    procedure AddLogListener(AListener: ILogListener);
+    procedure RemoveLogListener(AListener: ILogListener);
+    //property OnLogMessage: TStringProc read FOnLogMessage write FOnLogMessage;
+  end;
+
+implementation
+
+{ TOrderItemEntry }
+
+constructor TOrderItemEntry.Create(AItem: IOrderItem; AQuantity: Integer);
+begin
+  inherited Create;
+  FItem := AItem;
+  FQuantity := AQuantity;
+end;
+
+{ TOrder }
+
+constructor TOrder.Create;
+begin
+  inherited Create;
+  FOrderDate := Now;
+  FItems := TList<TOrderItemEntry>.Create;
+  //FOnLogMessage := nil;
+  FLogListeners := TList<ILogListener>.Create;
+end;
+
+destructor TOrder.Destroy;
+var
+  Entry: TOrderItemEntry;
+begin
+  for Entry in FItems do
+  begin
+    Entry.Free;
+  end;
+  FItems.Free;
+  FLogListeners.Free;
+  inherited Destroy;
+end;
+
+procedure TOrder.AddItem(AItem: IOrderItem; AQuantity: Integer);
+begin
+  FItems.Add(TOrderItemEntry.Create(AItem, AQuantity));
+end;
+
+procedure TOrder.AddLogListener(AListener: ILogListener);
+begin
+if not FLogListeners.Contains(AListener) then
+    FLogListeners.Add(AListener);
+end;
+
+function TOrder.CalculateTotalOrderValue: Currency;
+begin
+  var Entry: TOrderItemEntry;
+  var ItemTotal: Currency;
+  Result := 0;
+  for Entry in FItems do
+  begin
+    Entry.Item.CalculateTotal(Entry.Quantity, ItemTotal);
+    Result := Result + ItemTotal;
+  end;
+end;
+
+procedure TOrder.ProcessOrder;
+begin
+  Log(Format('Processing Request %s', [DateTimeToStr(FOrderDate)]));
+  Log('--- Items ---');
+  ProcessLogOrderItem;
+
+  Log(Format('--- Total Value: $ %s ---', [FormatCurr('', CalculateTotalOrderValue)]));
+end;
+
+procedure TOrder.RemoveLogListener(AListener: ILogListener);
+begin
+  FLogListeners.Remove(AListener);
+end;
+
+procedure TOrder.ProcessLogOrderItem;
+begin
+  var Entry: TOrderItemEntry;
+  for Entry in FItems do
+  begin
+    Log(Format('- %d x %s ($ %s)', [Entry.Quantity, Entry.Item.GetDescription, FormatCurr('', Entry.Item.GetPrice)]));
+    LogItemDetails(Entry.Item);
+  end;
+end;
+
+procedure TOrder.LogItemDetails(AItem: IOrderItem);
+begin
+  var PhysicalItem: IPhysicalItem;
+  var DigitalItem: IDigitalItem;
+  if Supports(AItem, IPhysicalItem, PhysicalItem) then
+  begin
+    Log(Format('  - Weight: %f kg, Volume: %f m³', [PhysicalItem.GetWeightKg, PhysicalItem.GetVolumeCubicMeters]));
+  end
+  else if Supports(AItem, IDigitalItem, DigitalItem) then
+  begin
+    Log(Format('  - Download link: %s', [DigitalItem.GetDownloadLink]));
+  end;
+end;
+
+procedure TOrder.Log(const AMessage: string);
+begin
+  var Listener: ILogListener;
+  for Listener in FLogListeners do
+  begin
+    Listener.LogMessage(AMessage);
+  end;
+end;
+
+end.

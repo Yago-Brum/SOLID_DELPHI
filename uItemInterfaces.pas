@@ -7,21 +7,21 @@ uses
 
 type
   IOrderItem = interface
-    ['{F8C2716E-14A5-421F-B8F5-E93671B30E4A}']
+  ['{5B0331D4-FDA0-4351-BEBB-D2B45DFD5745}']
     function GetDescription: string;
     function GetPrice: Currency;
     procedure CalculateTotal(Quantity: Integer; out Total: Currency);
   end;
 
   IPhysicalItem = interface(IOrderItem)
-    ['{7B46805A-D782-4EE9-9B34-4328F4920D52}']
+  ['{4BE800CD-1BF8-43F4-9BE3-9D1071639513}']
     function GetWeightKg: Real;
     function GetVolumeCubicMeters: Real;
     function HasDimensions: Boolean;
   end;
 
   IDigitalItem = interface(IOrderItem)
-    ['{CE9848E4-7213-4577-A5AD-E8EDCA09FC51}']
+  ['{181F58F4-0876-4ED1-A7AE-D695E13E4E31}']
     function IsDownloadable: Boolean;
     function GetDownloadLink: string;
   end;

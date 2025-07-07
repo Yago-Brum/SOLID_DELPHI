@@ -1,0 +1,52 @@
+unit uOrderService;
+
+interface
+
+uses
+  uOrder,
+  uItemInterfaces,
+  uOrderItems,
+  System.Classes,
+  System.SysUtils;
+
+type
+  TOrderService = class
+  private
+    FOnLogMessage: TOrderLogMessageEvent; // Mesmo tipo de evento que em TOrder
+  public
+    constructor Create(AOnLogMessage: TOrderLogMessageEvent);
+    procedure ProcessNewOrder;
+  end;
+
+implementation
+
+{ TOrderService }
+
+constructor TOrderService.Create(AOnLogMessage: TOrderLogMessageEvent);
+begin
+  inherited Create;
+  FOnLogMessage := AOnLogMessage;
+end;
+
+procedure TOrderService.ProcessNewOrder;
+var
+  Sparrow: IPhysicalItem;
+  Ebook: IDigitalItem;
+begin
+  var MyOrder := TOrder.Create;
+  try
+    MyOrder.OnLogMessage := FOnLogMessage; // O serviço passa o logger que ele recebeu
+
+    Sparrow := TMetalSparrow.Create('Metal Sparrow Collector''s Edition', 25.00, 0.15, 0.0001);
+    Ebook := TPenguinEbook.Create('E-book: The Secrets of the Penguins', 12.50, 'http://mystore.com/ebooks/pinguins_secret.pdf');
+
+    MyOrder.AddItem(Sparrow, 2);
+    MyOrder.AddItem(Ebook, 1);
+
+    MyOrder.ProcessOrder;
+  finally
+    MyOrder.Free;
+  end;
+end;
+
+end.
