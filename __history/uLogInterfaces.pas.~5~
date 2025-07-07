@@ -1,0 +1,13 @@
+unit uLogInterfaces;
+
+interface
+
+type
+  ILogListener = interface
+  ['{231CD7B0-F66A-48E1-ABF7-9A20DC518316}']
+    procedure LogMessage(const AMessage: string);
+  end;
+
+implementation
+
+end.

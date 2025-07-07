@@ -1,0 +1,29 @@
+unit uItemInterfaces;
+
+interface
+
+uses
+  System.SysUtils;
+
+type
+  IOrderItem = interface
+  ['{5B0331D4-FDA0-4351-BEBB-D2B45DFD5745}']
+    function GetDescription: string;
+    function GetPrice: Currency;
+    procedure CalculateTotal(Quantity: Integer; out Total: Currency);
+  end;
+
+  IPhysicalItem = interface(IOrderItem)
+    function GetWeightKg: Real;
+    function GetVolumeCubicMeters: Real;
+    function HasDimensions: Boolean;
+  end;
+
+  IDigitalItem = interface(IOrderItem)
+    function IsDownloadable: Boolean;
+    function GetDownloadLink: string;
+  end;
+
+implementation
+
+end.
